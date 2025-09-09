@@ -1,4 +1,4 @@
-name: Daily Random Commits
+name: Lazy Commits
 
 on:
   schedule:
@@ -68,7 +68,6 @@ jobs:
           # Small delay between commits
           sleep 3
         done
-        
-    - name: Push changes
-      run: |
+
         git push origin main
+        

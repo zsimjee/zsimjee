@@ -22,6 +22,7 @@ jobs:
         # MAKE SURE TO REPLACE THESE!!
         git config --local user.email "zaydsimjee@gmail.com"
         git config --local user.name "Zayd Simjee"
+        git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/zsimjee/zsimjee.git
         
     - name: Make random commits
       run: |

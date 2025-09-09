@@ -1,4 +1,4 @@
-name: Lazy Commits
+name: Lazy Commit
 
 on:
   schedule:
@@ -18,20 +18,18 @@ jobs:
         
     - name: Configure Git
       run: |
-        git config --local user.email "zaydsimjee@gmail.com"
-        git config --local user.name "Zayd Simjee"
+        git config --local user.email "${{ env.GIT_EMAIL }}"
+        git config --local user.name "${{ env.GIT_NAME }}"
         
     - name: Make random commits
       run: |
-        # Generate random number between 1-5
         NUM_COMMITS=$((RANDOM % 5 + 1))
         echo "Making $NUM_COMMITS commits today"
         
         for i in $(seq 1 $NUM_COMMITS); do
           if [ -f README.md ]; then
-            TRAILING_LINES=$(tail -n 10 README.md | grep -c '^[[:space:]]*$' || echo 0)
+            TRAILING_LINES=$(awk '/^$/{p++} /^./{p=0} END{print p+0}' README.md)
           else
-            echo "README.md not found, creating it"
             echo "# Repository" > README.md
             TRAILING_LINES=0
           fi
@@ -40,34 +38,30 @@ jobs:
           ACTION=$((RANDOM % 2))
           
           if [ $ACTION -eq 0 ] && [ $TRAILING_LINES -lt 2 ]; then
-            # Add whitespace (only if less than 2 lines)
             echo "" >> README.md
-            echo "Added whitespace line"
             git add README.md
             git commit -m "Add whitespace to README"
           elif [ $ACTION -eq 1 ] && [ $TRAILING_LINES -gt 0 ]; then
-            # Remove whitespace (only if there are lines to remove)
-            sed -i '$ { /^[[:space:]]*$/ d; }' README.md
-            echo "Removed whitespace line"
-            git add README.md
-            git commit -m "Remove whitespace from README"
+            if [ "$(tail -n 1 README.md)" = "" ]; then
+              head -n -1 README.md > README.md.tmp && mv README.md.tmp README.md
+              git add README.md
+              git commit -m "Remove whitespace from README"
+            else
+              echo "" >> README.md
+              git add README.md
+              git commit -m "Add temporary whitespace to README"
+            fi
           else
-            # If we can't add/remove, just add a space and remove it
-            echo " " >> README.md
+            echo "" >> README.md
             git add README.md
             git commit -m "Add temporary whitespace to README"
             
-            # Small delay to ensure different timestamps
             sleep 2
             
-            sed -i '$ { /^[[:space:]]*$/ d; }' README.md
+            head -n -1 README.md > README.md.tmp && mv README.md.tmp README.md
             git add README.md
             git commit -m "Remove temporary whitespace from README"
           fi
           
-          # Small delay between commits
           sleep 3
         done
-
-        git push origin main
-        

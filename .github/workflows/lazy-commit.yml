@@ -18,8 +18,9 @@ jobs:
         
     - name: Configure Git
       run: |
-        git config --local user.email "${{ env.GIT_EMAIL }}"
-        git config --local user.name "${{ env.GIT_NAME }}"
+        # MAKE SURE TO REPLACE THESE!!
+        git config --local user.email "zaydsimjee@gmail.com"
+        git config --local user.name "Zayd Simjee"
         
     - name: Make random commits
       run: |

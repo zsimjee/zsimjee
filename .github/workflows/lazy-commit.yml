@@ -1,0 +1,74 @@
+name: Daily Random Commits
+
+on:
+  schedule:
+    # Run daily at 9:00 AM UTC (adjust timezone as needed)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  make-commits:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Configure Git
+      run: |
+        git config --local user.email "zaydsimjee@gmail.com"
+        git config --local user.name "Zayd Simjee"
+        
+    - name: Make random commits
+      run: |
+        # Generate random number between 1-5
+        NUM_COMMITS=$((RANDOM % 5 + 1))
+        echo "Making $NUM_COMMITS commits today"
+        
+        for i in $(seq 1 $NUM_COMMITS); do
+          if [ -f README.md ]; then
+            TRAILING_LINES=$(tail -n 10 README.md | grep -c '^[[:space:]]*$' || echo 0)
+          else
+            echo "README.md not found, creating it"
+            echo "# Repository" > README.md
+            TRAILING_LINES=0
+          fi
+          
+          echo "Current trailing whitespace lines: $TRAILING_LINES"
+          ACTION=$((RANDOM % 2))
+          
+          if [ $ACTION -eq 0 ] && [ $TRAILING_LINES -lt 2 ]; then
+            # Add whitespace (only if less than 2 lines)
+            echo "" >> README.md
+            echo "Added whitespace line"
+            git add README.md
+            git commit -m "Add whitespace to README"
+          elif [ $ACTION -eq 1 ] && [ $TRAILING_LINES -gt 0 ]; then
+            # Remove whitespace (only if there are lines to remove)
+            sed -i '$ { /^[[:space:]]*$/ d; }' README.md
+            echo "Removed whitespace line"
+            git add README.md
+            git commit -m "Remove whitespace from README"
+          else
+            # If we can't add/remove, just add a space and remove it
+            echo " " >> README.md
+            git add README.md
+            git commit -m "Add temporary whitespace to README"
+            
+            # Small delay to ensure different timestamps
+            sleep 2
+            
+            sed -i '$ { /^[[:space:]]*$/ d; }' README.md
+            git add README.md
+            git commit -m "Remove temporary whitespace from README"
+          fi
+          
+          # Small delay between commits
+          sleep 3
+        done
+        
+    - name: Push changes
+      run: |
+        git push origin main

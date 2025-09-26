@@ -8,4 +8,3 @@ I'm obsessed with usability.
 
 See my latest work at [Snowglobe](https://snowglobe.so)
 
-
